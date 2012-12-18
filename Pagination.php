@@ -101,12 +101,15 @@
 		}
 		
 		public function getPreviousPage() {
-			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) ? 1 : (int)($this->fields['page'] - 1);
+			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) 
+				? 1 
+				: (int)($this->fields['page'] - 1);
 		}
 		
 		public function getNextPage() {
-			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) ?  $this->fields['page'] 
-                    : (int)($this->fields['page'] + 1);
+			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) 
+				?  $this->fields['page'] 
+                    		: (int)($this->fields['page'] + 1);
 		}
 		
 		//Public Methods
@@ -188,7 +191,7 @@
 			
 			if ($this->fields['totalRows'] == 0) {
 				if ($this->fields['debug']) {
-                    throw new RuntimeException('Query returned zero rows.');
+                    			throw new RuntimeException('Query returned zero rows.');
 				}
                 
 				return false;
@@ -210,7 +213,7 @@
 			
 			if (!$resultRows) {
 				if ($this->fields['debug']) {
-                    throw new RuntimeException(sprintf('Pagination query failed! Error code: %s %s', mysql_errorno(),  mysql_error()));
+                   			throw new RuntimeException(sprintf('Pagination query failed! Error code: %s %s', mysql_errorno(),  mysql_error()));
 				}	
                 			
 				return false;
@@ -231,7 +234,7 @@
 			
 			if ($this->fields['totalRows'] == 0) {
 				if ($this->fields['debug']) {
-                    throw new RuntimeException('Query returned zero rows.');
+                    			throw new RuntimeException('Query returned zero rows.');
 				}
                 
 				return false;
@@ -256,7 +259,7 @@
 			
 			if (!$resultRows) {
 				if ($this->fields['debug']) {
-                    throw new RuntimeException(sprintf('Pagination query failed! Error code: %s',mssql_get_last_message()));
+                    			throw new RuntimeException(sprintf('Pagination query failed! Error code: %s',mssql_get_last_message()));
 				}	
                 			
 				return false;
@@ -265,23 +268,23 @@
 			return $resultRows;
 		}
         
-        protected function getLinkString($class, $page, $linkText) {
-            return sprintf('%s<a class="%s" href="%s?%s&%s=%s"><span><span>%s</span></span></a>%s', $this->fields['prefix'], $class, $this->fields['baseLink'], 
-            $this->fields['queryString'], $this->fields['queryStringAlias'], $page, $linkText, $this->fields['suffix']);
-        }
-        
-        protected function getDisabledString($class, $disabledText) {
-            return sprintf('%s<span class="%s">%s</span>%s', $this->fields['prefix'], $class, $disabledText, $this->fields['suffix']);
-        }
+	        protected function getLinkString($class, $page, $linkText) {
+	            return sprintf('%s<a class="%s" href="%s?%s&%s=%s"><span><span>%s</span></span></a>%s', $this->fields['prefix'], $class, $this->fields['baseLink'], 
+	            $this->fields['queryString'], $this->fields['queryStringAlias'], $page, $linkText, $this->fields['suffix']);
+	        }
+	        
+	        protected function getDisabledString($class, $disabledText) {
+	            return sprintf('%s<span class="%s">%s</span>%s', $this->fields['prefix'], $class, $disabledText, $this->fields['suffix']);
+	        }
 		
 		protected function previousLink() {
 			$str = '';
 			
 			if ($this->fields['prev']) {
 				if ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) {
-                    $str = $this->getDisabledString('previous disabled', $this->fields['previousStr']);
+                    			$str = $this->getDisabledString('previous disabled', $this->fields['previousStr']);
 				} else {
-                    $str = $this->getLinkString('previous', ($this->fields['page'] - 1), $this->fields['previousStr']);
+                    			$str = $this->getLinkString('previous', ($this->fields['page'] - 1), $this->fields['previousStr']);
 				}
 			}
 			
@@ -293,9 +296,9 @@
 			
 			if ($this->fields['next']) {
 				if ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) {
-                    $str = $this->getDisabledString('next disabled', $this->fields['nextStr']);
+                    			$str = $this->getDisabledString('next disabled', $this->fields['nextStr']);
 				} else {
-                    $str = $this->getLinkString('next', ($this->fields['page'] + 1), $this->fields['nextStr']);
+                    			$str = $this->getLinkString('next', ($this->fields['page'] + 1), $this->fields['nextStr']);
 				}
 			}
 			
@@ -306,10 +309,10 @@
 			$str = '';
             
 			if ($this->fields['first']) {
-                if ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) {
-                    $str = $this->getDisabledString('first disabled', $this->fields['nextStr']);
+                		if ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) {
+                    			$str = $this->getDisabledString('first disabled', $this->fields['nextStr']);
 				} else {
-                    $str = $this->getLinkString('first', 1, $this->fields['firstStr']);
+                    			$str = $this->getLinkString('first', 1, $this->fields['firstStr']);
 				}
 			}
             
@@ -320,10 +323,10 @@
 			$str = '';
             
 			if ($this->fields['last']) {
-                if ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) {
-                    $str = $this->getDisabledString('last disabled', $this->fields['nextStr']);
+                		if ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) {
+                    			$str = $this->getDisabledString('last disabled', $this->fields['nextStr']);
 				} else {
-                    $str = $this->getLinkString('last', $this->fields['maxPages'], $this->fields['lastStr']);
+                    			$str = $this->getLinkString('last', $this->fields['maxPages'], $this->fields['lastStr']);
 				}
 			}
             
@@ -332,7 +335,6 @@
 		
 		protected function seeAllLink() {
 			$str = '';
-            
 			if ($this->fields['viewAll']) {
 				$viewAllPage = 'all';
 				$viewAllStr = 'default';
@@ -341,7 +343,7 @@
 					$viewAllStr = 'selected';
 				}
 
-                $str = $this->getLinkString('all', $viewAllPage, $this->fields['viewAllStr'][$viewAllStr]);
+                		$str = $this->getLinkString('all', $viewAllPage, $this->fields['viewAllStr'][$viewAllStr]);
 			}
             
 			return $str;
