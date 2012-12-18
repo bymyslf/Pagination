@@ -1,13 +1,9 @@
 <?php
-    /*
-	* @file   Pagination.php
-	* @author Luís Barbosa        
-	*/
 	class Pagination implements ArrayAccess, Serializable 
 	{	
 		private $fields = array(
 			'page' => 1,
-            'queryStringAlias' => 'page',
+            		'queryStringAlias' => 'page',
 			'rows' => 5,
 			'debug' => false,
 			'prefix' => '',
@@ -63,41 +59,41 @@
 			}
 		}
         
-        /* ********* ArrayAccess methods ********* */
-        
-        public function offsetSet($offset, $value) {
-            if (is_null($offset)) {
-                $this->fields[] = $value;
-            } else {
-                $this->fields[$offset] = $value;
-            }
-        }
-        
-        public function offsetExists($offset) {
-            return isset($this->fields[$offset]);
-        }
-        
-        public function offsetUnset($offset) {
-            unset($this->fields[$offset]);
-        }
-        
-        public function offsetGet($offset) {
-            return isset($this->fields[$offset]) ? $this->fields[$offset] : null;
-        }
+	        /* ********* ArrayAccess methods ********* */
+	        
+	        public function offsetSet($offset, $value) {
+	            if (is_null($offset)) {
+	                $this->fields[] = $value;
+	            } else {
+	                $this->fields[$offset] = $value;
+	            }
+	        }
+	        
+	        public function offsetExists($offset) {
+	            return isset($this->fields[$offset]);
+	        }
+	        
+	        public function offsetUnset($offset) {
+	            unset($this->fields[$offset]);
+	        }
+	        
+	        public function offsetGet($offset) {
+	            return isset($this->fields[$offset]) ? $this->fields[$offset] : null;
+	        }
         
 		/* ********* ArrayAccess methods ********* */
     
-        /* **** Serializable methods **** */
-        
-        public function serialize() {
-            return serialize($this->fields);
-        }
-        
-        public function unserialize($data) {
-            $this->fields = unserialize($data);
-        }
-        
-        /* **** Serializable methods **** */
+	        /* **** Serializable methods **** */
+	        
+	        public function serialize() {
+	            return serialize($this->fields);
+	        }
+	        
+	        public function unserialize($data) {
+	            $this->fields = unserialize($data);
+	        }
+	        
+	        /* **** Serializable methods **** */
         
         
 		public function getCurrentTotal() {
@@ -119,7 +115,7 @@
 			
 			if (!is_null($this->fields['connection']) && !is_resource($this->fields['connection'])) {
 				if ($this->fields['debug']) {
-                    throw new RuntimeException('Check if the provided sql connection is a valid resource!');
+                    			throw new RuntimeException('Check if the provided sql connection is a valid resource!');
 				}	
                 
 				return false;
