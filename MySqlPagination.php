@@ -31,7 +31,7 @@
 			}
             
             if ($this['page'] === 'all') {
-				$paginationQuery = sprintf('%s %s', $this['sqlStatement'], $this['orderBy']);
+				$paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'];
 			} else {
                 $page = (int)$this['page'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
@@ -39,7 +39,7 @@
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
 				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
 				
-                $paginationQuery = sprintf('%s LIMIT %u, %u', $this['sqlStatement'], $limitBegin, $itemsPerPage);
+                $paginationQuery = $this['sqlStatement'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
 			}
             
 			return mysql_query($paginationQuery, $this['connection']);
