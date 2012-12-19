@@ -38,6 +38,8 @@
                     return $this->previousPage();
                 case $name == 'nextPage' :
                     return $this->nextPage();
+                case $name == 'totalPages' :
+                    return $this->totalPages;
             }
 		}
 		
@@ -91,7 +93,7 @@
 		//Public Methods
         public abstract function rows();
 		
-		public function renderPages() {
+		public function renderPagination() {
 			if ($this['page'] === 'all') {
 				return $this->renderViewAllLink();
 			} 

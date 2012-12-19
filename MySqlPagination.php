@@ -2,7 +2,7 @@
   class MySqlPagination extends Pagination 
     {
         public function __construct(array $options) {
-  		$this = array_merge($this, $options);
+  			$this = array_merge($this, $options);
 			
 			if (empty($this['baseLink'])) {
 				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
