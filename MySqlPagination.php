@@ -1,5 +1,7 @@
 <?php
-  class MySqlPagination extends Pagination 
+	require('Pagination.php');
+	
+  	class MySqlPagination extends Pagination 
     {
         public function __construct(array $options) {
   			$this = array_merge($this, $options);

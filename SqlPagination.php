@@ -1,4 +1,6 @@
 <?php
+	require('Pagination.php');
+
   	class SqlPagination extends Pagination
     {
         public function __construct(array $options) {
