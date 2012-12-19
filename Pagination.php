@@ -79,7 +79,7 @@
         
         protected function renderLink($class, $page, $text) {
             $pattern = $this['linkPattern'];
-            $href = sprintf('?%s&page=%u', $this['queryString'], $page);
+            $href = '?' . $this['queryString'] . '&page=' .  $page;
             return str_replace($this->search, array($class, $href, $text), $pattern);
         }
         
