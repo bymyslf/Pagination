@@ -1,352 +1,270 @@
 <?php
-	class Pagination implements ArrayAccess, Serializable 
+	abstract class Pagination implements ArrayAccess 
 	{	
-		private $fields = array(
-			'page' => 1,
-            		'queryStringAlias' => 'page',
-			'rows' => 5,
+        protected $connection = null;
+        protected $totalPages = 0;
+        protected $rowCount = 0;
+        protected $currentTotal = 0;
+        protected $search = array ('{CLASS}', '{HREF}', '{TEXT}');
+		protected $config = array (
+			'currentPage' => 1,
+            'queryString' => null,
+			'itemsPerPage' => 5,
 			'debug' => false,
-			'prefix' => '',
-			'suffix' => '',
 			'adjacents' => 2,
-			'limitBegin' => 0,
-			'next' => false,
-			'prev' => false,
-			'first' => false,
-			'last' => false,
-			'viewAll' => false,
-			'previousStr' => 'previous',
-			'nextStr' => 'next',
-			'firstStr' => 'first',
-			'lastStr' => 'last',
-			'viewAllStr' => array(
-				'default' => 'view all',
-				'selected' => 'page view'
-			),
-			'sqlStatement' => NULL,
-			'connection' => NULL,
-			'currentTotalRows' => NULL,
-			'sqlRows' => NULL,
-			'maxPages' => NULL,
-			'totalRows' => NULL,
-			'queryString' => NULL,
-			'baseLink' => '',
-			'mySql' => true
+            'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
+            'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
+			'sqlStatement' => null,
+            'orderBy' => '',
+            'stringDefaults' => array(
+                'previous' => 'previous',
+                'next' => 'next',
+                'first' => 'first',
+                'last' => 'last',
+                'all' => array (
+                    'default' => 'view all',
+                    'whenSelected' => 'page view'  
+                ) 
+            ) 
 		);
 		
-		public function __construct(array $options) {
-			$this->fields = array_merge($this->fields, $options);
-			
-			if (empty($this->fields['baseLink'])) {
-				$this->fields['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
-			}
-		}
-		
-		//Static method to provide method chaining
-		public static function getInstance(array $options) {
-			return new Pagination($options);
-		}
-		
 		public function __get($name) {
-			if (array_key_exists($name, $this->fields)) {
-				return $this->fields[$name];
-			}
+            switch (true) {
+                case array_key_exists($name, $this) :
+                    return $this[$name];
+                case $name == 'subtotal' :
+                    return ($this->limitBegin + $this->currentTotal);
+                case $name == 'previousPage' :
+                    return $this->previousPage();
+                case $name == 'nextPage' :
+                    return $this->nextPage();
+            }
 		}
 		
 		public function __set($name, $value) {
-			if (array_key_exists($name, $this->fields)) {
-				$this->fields[$name] = $value;
+			if (array_key_exists($name, $this)) {
+				$this[$name] = $value;
 			}
 		}
         
-	        /* ********* ArrayAccess methods ********* */
-	        
-	        public function offsetSet($offset, $value) {
-	            if (is_null($offset)) {
-	                $this->fields[] = $value;
-	            } else {
-	                $this->fields[$offset] = $value;
-	            }
-	        }
-	        
-	        public function offsetExists($offset) {
-	            return isset($this->fields[$offset]);
-	        }
-	        
-	        public function offsetUnset($offset) {
-	            unset($this->fields[$offset]);
-	        }
-	        
-	        public function offsetGet($offset) {
-	            return isset($this->fields[$offset]) ? $this->fields[$offset] : null;
-	        }
+        // BEGIN ARRAYACCESS METHODS
+        public function offsetSet($offset, $value) {
+            if (is_null($offset)) {
+                $this->config[] = $value;
+            } else {
+                $this->config[$offset] = $value;
+            }
+        }
         
-		/* ********* ArrayAccess methods ********* */
-    
-	        /* **** Serializable methods **** */
-	        
-	        public function serialize() {
-	            return serialize($this->fields);
-	        }
-	        
-	        public function unserialize($data) {
-	            $this->fields = unserialize($data);
-	        }
-	        
-	        /* **** Serializable methods **** */
+        public function offsetExists($offset) {
+            return isset($this->config[$offset]);
+        }
         
+        public function offsetUnset($offset) {
+            unset($this->config[$offset]);
+        }
         
-		public function getCurrentTotal() {
-			return $this->fields['limitBegin'] + $this->fields['currentTotalRows'];
+        public function offsetGet($offset) {
+            return isset($this->config[$offset]) ? $this->config[$offset] : null;
+        }
+        // END ARRAYACCESS METHODS
+          
+		protected function previousPage() {
+			return ($this->totalPages == 1 || $this['page'] == 1) ? 1 : (int)$this['page'] - 1;
 		}
 		
-		public function getPreviousPage() {
-			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) 
-				? 1 
-				: (int)($this->fields['page'] - 1);
+		protected function nextPage() {
+			return ($this->totalPages == 1 || $this['page'] == $this->totalPages) ?  $this['page'] : (int)($this['page'] + 1);
 		}
-		
-		public function getNextPage() {
-			return ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) 
-				?  $this->fields['page'] 
-                    		: (int)($this->fields['page'] + 1);
-		}
+        
+        protected function renderLink($class, $page, $text) {
+            $pattern = $this['linkPattern'];
+            $href = sprintf('?%s&page=%u', $this['queryString'], $page);
+            return str_replace($this->search, array($class, $href, $text), $pattern);
+        }
+        
+        protected function renderDisabledLink($class, $text) {
+            $pattern = $this['disabledPattern'];
+            return str_replace(array('{CLASS}', '{TEXT}'), array($class, $text), $pattern);
+        }
 		
 		//Public Methods
-		public function getRows() {
-			$resultRows = null;
-			
-			if (!is_null($this->fields['connection']) && !is_resource($this->fields['connection'])) {
-				if ($this->fields['debug']) {
-                    			throw new RuntimeException('Check if the provided sql connection is a valid resource!');
-				}	
-                
-				return false;
-			}
-			
-			if ($this->fields['mySql']) {
-				$resultRows = $this->mySqlRows();
-			} else {
-				$resultRows = $this->MSSQLRows();
-			}
-			
-			if (is_resource($resultRows)) {
-				$this->fields['sqlRows'] = $resultRows;
-				$this->fields['currentTotalRows'] = ($this->fields['mySql']) ? mysql_num_rows($this->fields['sqlRows']) : mssql_num_rows($this->fields['sqlRows']);
-			}
-			
-			return $resultRows;
-		}
+        public abstract function rows();
 		
-		public function paginate() {
-			$paginationStr = '';
-	
-			if ($this->fields['page'] === 'all') {
-				$paginationStr .= $this->seeAllLink();
-			} else {
-				$auxStr = '';
-				$start = 0;
-				$end = 0;
-				
-				if (($this->fields['page'] == 1) || ($this->fields['page'] <= $this->fields['adjacents'])) {
-                    $start = 1;
-                    $end = (($this->fields['adjacents'] * 2) + 1);
-                    if ($this->fields['maxPages'] < $end) {
-                        $end = $this->fields['maxPages'];
-                    }
-                } else if (($this->fields['page'] == $this->fields['maxPages']) 
-                    || ($this->fields['page'] == ($this->fields['maxPages'] - 1) && $this->fields['adjacents'] > 1)) {
-                    $start = ($this->fields['maxPages'] - ($this->fields['adjacents'] * 2));
-                    $end = $this->fields['maxPages'];
-                    if ($start <= 0) {
-                        $start = 1;
-                    }
-                } else {
-                    $start = $this->fields['page'] - $this->fields['adjacents'];
-                    $end = $this->fields['page'] + $this->fields['adjacents'];
-                    if ($this->fields['page'] == $this->fields['adjacents']) {
-                        ++$start;
-                    }
+		public function renderPages() {
+			if ($this['page'] === 'all') {
+				return $this->renderViewAllLink();
+			} 
+            
+			$start = 0;
+			$end = 0;
+            $page = (int)$this['page'];
+            $adjacents = (int)$this['adjacents'];
+			if (($page == 1) || ($page <= $adjacents)) {
+                $start = 1;
+                $end = ($adjacents * 2) + 1;
+                if ($this->totalPages < $end) {
+                    $end = $this->totalPages;
                 }
-                
-                for ($i = $start; $i <= $end; $i++) {
-                    $auxStr .= $this->getLinkString(($i == $this->fields['page']) ? 'selected' : '', $i, $i);
-				}
-                
-                $paginationStr = sprintf('%s%s%s%s%s%s', $this->firstLink(), $this->previousLink(), $auxStr, $this->nextLink(), $this->lastLink(),
-                $this->seeAllLink());
+            } else if (($page == $this->totalPages) || ($page == ($this->totalPages - 1) && $adjacents > 1)) {
+                $start = ($this->totalPages - ($adjacents * 2));
+                $end = $this->totalPages;
+                if ($start <= 0) {
+                    $start = 1;
+                }
+            } else {
+                $start = $page - $adjacents;
+                $end = $page + $adjacents;
+                if ($page == $adjacents) {
+                    ++$start;
+                }
+            }
+            
+            $pages = '';
+            for ($i = $start; $i <= $end; ++$i) {
+                $pages .= $this->renderLink(($i == $page) ? 'selected' : '', $i, $i);
 			}
-			
-			return $paginationStr;
+            
+            return $pages;
 		}
-		
-		protected function mySqlRows() {
-			if (!is_null($this->fields['connection'])) {
-				$resultTotal = mysql_query(sprintf('%s', $this->fields['sqlStatement']), $this->fields['connection']);
-			} else {
-				$resultTotal = mysql_query(sprintf('%s', $this->fields['sqlStatement']));
-			}
-			
-			$this->fields['totalRows'] = mysql_num_rows($resultTotal);
-			
-			if ($this->fields['totalRows'] == 0) {
-				if ($this->fields['debug']) {
-                    			throw new RuntimeException('Query returned zero rows.');
-				}
-                
-				return false;
-			}
-			
-			if ($this->fields['page'] === 'all') {
-				$paginationQuery = sprintf('%s', $this->fields['sqlStatement']);
-			} else {
-				$this->fields['maxPages'] = ceil((int)$this->fields['totalRows'] / (int)$this->fields['rows']);
-				$this->fields['limitBegin'] = (((int)$this->fields['page'] - 1) * (int)$this->fields['rows']);
-				$paginationQuery = sprintf('%s LIMIT %u, %u', $this->fields['sqlStatement'], $this->fields['limitBegin'], $this->fields['rows']);
-			}
-			
-			if (!is_null($this->fields['connection'])) {
-				$resultRows = mysql_query($paginationQuery, $this->fields['connection']);
-			} else {
-				$resultRows = mysql_query($paginationQuery);
-			}
-			
-			if (!$resultRows) {
-				if ($this->fields['debug']) {
-                   			throw new RuntimeException(sprintf('Pagination query failed! Error code: %s %s', mysql_errorno(),  mysql_error()));
-				}	
-                			
-				return false;
-			}
-			
-			return $resultRows;
-		}
-		
-		/* ROW_NUMBER() OVER (ORDER BY column) AS 'RowNumber' */
-		protected function MSSQLRows() {
-			if (!is_null($this->fields['connection'])) {
-				$resultTotal = mssql_query(sprintf('%s', $this->fields['sqlStatement']), $this->fields['connection']);
-			} else {
-				$resultTotal = mssql_query(sprintf('%s', $this->fields['sqlStatement']));
-			}
-			
-			$this->fields['totalRows'] = mssql_num_rows($resultTotal);
-			
-			if ($this->fields['totalRows'] == 0) {
-				if ($this->fields['debug']) {
-                    			throw new RuntimeException('Query returned zero rows.');
-				}
-                
-				return false;
-			}
-			
-			if ($this->fields['page'] === 'all') {
-				$paginationQuery = sprintf('%s %s', $this->fields['sqlStatement'], $this->fields['orderBy']);
-			} else {
-				$this->fields['maxPages'] = ceil((int)$this->fields['totalRows'] / (int)$this->fields['rows']);
-				$this->fields['limitBegin'] = (((int)$this->fields['page'] - 1) * (int)$this->fields['rows']) + 1;
-				
-				$maxRowNumber = ($this->fields['rows'] * $this->fields['page']);
-				$paginationQuery = sprintf('%s WHERE RowNumber BETWEEN %u AND %u', $this->fields['sqlStatement'], 
-				$this->fields['limitBegin'], $maxRowNumber);
-			}
-	        
-			if (!is_null($this->fields['connection'])) {
-				$resultRows = mssql_query($paginationQuery, $this->fields['connection']);
-			} else {
-				$resultRows = mssql_query($paginationQuery);
-			}
-			
-			if (!$resultRows) {
-				if ($this->fields['debug']) {
-                    			throw new RuntimeException(sprintf('Pagination query failed! Error code: %s',mssql_get_last_message()));
-				}	
-                			
-				return false;
-			}
-			
-			return $resultRows;
+	    
+        public function renderFirstLink($text = '') {
+			if ($this->totalPages == 1 || (int)$this['page'] == 1) {
+                return $this->renderDisabledLink('first disabled', $text);
+			} 
+            
+            return $this->renderLink('first', 1, $text);
 		}
         
-	        protected function getLinkString($class, $page, $linkText) {
-	            return sprintf('%s<a class="%s" href="%s?%s&%s=%s"><span><span>%s</span></span></a>%s', $this->fields['prefix'], $class, $this->fields['baseLink'], 
-	            $this->fields['queryString'], $this->fields['queryStringAlias'], $page, $linkText, $this->fields['suffix']);
-	        }
-	        
-	        protected function getDisabledString($class, $disabledText) {
-	            return sprintf('%s<span class="%s">%s</span>%s', $this->fields['prefix'], $class, $disabledText, $this->fields['suffix']);
-	        }
-		
-		protected function previousLink() {
-			$str = '';
-			
-			if ($this->fields['prev']) {
-				if ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) {
-                    			$str = $this->getDisabledString('previous disabled', $this->fields['previousStr']);
-				} else {
-                    			$str = $this->getLinkString('previous', ($this->fields['page'] - 1), $this->fields['previousStr']);
-				}
-			}
-			
-			return $str;
-		}
-		
-		protected function nextLink() {
-			$str = '';
-			
-			if ($this->fields['next']) {
-				if ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) {
-                    			$str = $this->getDisabledString('next disabled', $this->fields['nextStr']);
-				} else {
-                    			$str = $this->getLinkString('next', ($this->fields['page'] + 1), $this->fields['nextStr']);
-				}
-			}
-			
-			return $str;
-		}
-		
-		protected function firstLink() {
-			$str = '';
-            
-			if ($this->fields['first']) {
-                		if ($this->fields['maxPages'] == 1 || $this->fields['page'] == 1) {
-                    			$str = $this->getDisabledString('first disabled', $this->fields['nextStr']);
-				} else {
-                    			$str = $this->getLinkString('first', 1, $this->fields['firstStr']);
-				}
+        public function renderPreviousLink($text = '') {
+            if ($this->totalPages == 1 || (int)$this['page'] == 1) {
+                return $this->renderDisabledLink('previous disabled', $text);
 			}
             
-			return $str;
-		}
+            return $this->renderLink('previous', ((int)$this['page'] - 1), $text);
+        }
 		
-		protected function lastLink() {
-			$str = '';
-            
-			if ($this->fields['last']) {
-                		if ($this->fields['maxPages'] == 1 || $this->fields['page'] == $this->fields['maxPages']) {
-                    			$str = $this->getDisabledString('last disabled', $this->fields['nextStr']);
-				} else {
-                    			$str = $this->getLinkString('last', $this->fields['maxPages'], $this->fields['lastStr']);
-				}
+		public function renderNextLink($text = '') {
+            if ($this->totalPages == 1 || $this['page'] == $this->totalPages) {
+                return $this->renderDisabledLink('next disabled', $text);
 			}
             
-			return $str;
-		}
+            return $this->renderLink('next', ((int)$this['page'] + 1), $text);
+        }
+        
+        public function renderLastLink($text = '') {
+            if ($this->totalPages == 1 || (int)$this['page'] == $this->totalPages) {
+                return $this->renderDisabledLink('last disabled', $text);
+			} 
+            
+			return $this->renderLink('last', $this['maxPages'], $text);
+        }
 		
-		protected function seeAllLink() {
-			$str = '';
-			if ($this->fields['viewAll']) {
-				$viewAllPage = 'all';
-				$viewAllStr = 'default';
-				if ($this->fields['page'] === 'all') {
-					$viewAllPage = 1;
-					$viewAllStr = 'selected';
-				}
-
-                		$str = $this->getLinkString('all', $viewAllPage, $this->fields['viewAllStr'][$viewAllStr]);
+		public function renderViewAllLink(array $text = null) {
+            $text = array_merge($this['all'], $text);
+			$viewAllPage = 'all';
+			$viewAllString = $text['default'];
+			if ($this['page'] === 'all') {
+				$viewAllPage = 1;
+				$viewAllStr = $text['whenSelected'];
 			}
             
-			return $str;
+			return $this->renderLink('all', $viewAllPage, $viewAllStr);
 		}
 	}
+    
+    class SqlPagination extends Pagination
+    {
+        public function __construct(array $options) {
+			$this->config = array_merge($this->config, $options);
+			
+			if (empty($this['baseLink'])) {
+				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
+			}
+		}
+		
+		public static function factory(array $options) {
+			return new SqlPagination($options);
+		}
+        
+        public function rows() {
+			if (!is_null($this['connection']) && !is_resource($this['connection'])) {
+				if ($this['debug']) {
+                    throw new RuntimeException('Check if the provided sql connection is a valid resource!');
+				}	
+				return false;
+			}
+            
+            $resultTotal = mssql_query($this['sqlStatement'], $this['connection']);
+            $this->rowCount = mssql_num_rows($resultTotal);
+			if ($this->rowCount == 0) {
+				if ($this['debug']) {
+                    throw new RuntimeException('Query returned zero rows.');
+				}
+				return false;
+			}
+            
+            if ($this['page'] === 'all') {
+				$paginationQuery = sprintf('%s %s', $this['sqlStatement'], $this['orderBy']);
+			} else {
+                $page = (int)$this['page'];
+                $itemsPerPage = (int)$this['itemsPerPage'];
+                
+				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
+				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
+				
+				$maxRowNumber = ($itemsPerPage * $page);
+				$paginationQuery = sprintf('%s WHERE RowNumber BETWEEN %u AND %u', $this['sqlStatement'], $limitBegin, $maxRowNumber);
+			}
+            
+			return mssql_query($paginationQuery, $this['connection']);
+		}
+    }
+    
+    class MySqlPagination extends Pagination 
+    {
+        public function __construct(array $options) {
+			$this = array_merge($this, $options);
+			
+			if (empty($this['baseLink'])) {
+				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
+			}
+		}
+		
+		public static function factory(array $options) {
+			return new MySqlPagination($options);
+		}
+        
+        public function rows() {
+			if (!is_null($this['connection']) && !is_resource($this['connection'])) {
+				if ($this['debug']) {
+                    throw new RuntimeException('Check if the provided sql connection is a valid resource!');
+				}	
+				return false;
+			}
+            
+            $resultTotal = mysql_query($this['sqlStatement'], $this['connection']);
+            $this->rowCount = mysql_num_rows($resultTotal);
+			if ($this->rowCount == 0) {
+				if ($this['debug']) {
+                    throw new RuntimeException('Query returned zero rows.');
+				}
+				return false;
+			}
+            
+            if ($this['page'] === 'all') {
+				$paginationQuery = sprintf('%s %s', $this['sqlStatement'], $this['orderBy']);
+			} else {
+                $page = (int)$this['page'];
+                $itemsPerPage = (int)$this['itemsPerPage'];
+                
+				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
+				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
+				
+                $paginationQuery = sprintf('%s LIMIT %u, %u', $this['sqlStatement'], $limitBegin, $itemsPerPage);
+			}
+            
+			return mysql_query($paginationQuery, $this['connection']);
+		}
+    }
 ?>
