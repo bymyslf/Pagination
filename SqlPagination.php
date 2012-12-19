@@ -31,7 +31,7 @@
 			}
             
             if ($this['page'] === 'all') {
-				$paginationQuery = sprintf('%s %s', $this['sqlStatement'], $this['orderBy']);
+				$paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'];
 			} else {
                 $page = (int)$this['page'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
@@ -40,7 +40,7 @@
 				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
 
 				$maxRowNumber = ($itemsPerPage * $page);
-				$paginationQuery = sprintf('%s WHERE RowNumber BETWEEN %u AND %u', $this['sqlStatement'], $limitBegin, $maxRowNumber);
+				$paginationQuery = $this['sqlStatement'] . ' WHERE RowNumber BETWEEN ' . $limitBegin . ' AND ' . $maxRowNumber;
 			}
             
 			return mssql_query($paginationQuery, $this['connection']);
