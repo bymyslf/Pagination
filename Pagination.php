@@ -137,11 +137,12 @@
 		}
         
         public function renderPreviousLink($text = '') {
-            if ($this->totalPages == 1 || (int)$this['page'] == 1) {
+            $page = (int)$this['page'];
+            if ($this->totalPages == 1 || $page == 1) {
                 return $this->renderDisabledLink('previous disabled', $text);
 			}
             
-            return $this->renderLink('previous', ((int)$this['page'] - 1), $text);
+            return $this->renderLink('previous', ($page - 1), $text);
         }
 		
 		public function renderNextLink($text = '') {
@@ -157,7 +158,7 @@
                 return $this->renderDisabledLink('last disabled', $text);
 			} 
             
-			return $this->renderLink('last', $this['maxPages'], $text);
+			return $this->renderLink('last', $this->totalPages, $text);
         }
 		
 		public function renderViewAllLink(array $text = null) {
