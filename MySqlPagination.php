@@ -16,14 +16,14 @@
 		}
         
         public function rows() {
-			if (!is_null($this['connection']) && !is_resource($this['connection'])) {
+			if (!is_null($this['sqlConnection']) && !is_resource($this['sqlConnection'])) {
 				if ($this['debug']) {
                     throw new RuntimeException('Check if the provided sql connection is a valid resource!');
 				}	
 				return false;
 			}
             
-            $resultTotal = mysql_query($this['sqlStatement'], $this['connection']);
+            $resultTotal = mysql_query($this['sqlStatement'], $this['sqlConnection']);
             $this->rowCount = mysql_num_rows($resultTotal);
 			if ($this->rowCount == 0) {
 				if ($this['debug']) {
@@ -44,7 +44,7 @@
                 $paginationQuery = $this['sqlStatement'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
 			}
             
-			return mysql_query($paginationQuery, $this['connection']);
+			return mysql_query($paginationQuery, $this['sqlConnection']);
 		}
     }
 ?>
