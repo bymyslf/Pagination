@@ -5,7 +5,8 @@
         protected $totalPages = 0;
         protected $rowCount = 0;
         protected $currentTotal = 0;
-        protected $search = array ('{CLASS}', '{HREF}', '{TEXT}');
+        protected $disabledPlaceholders = array('{CLASS}', '{TEXT}');
+        protected $linkPlaceholders = array ('{CLASS}', '{HREF}', '{TEXT}');
 		protected $config = array (
 			'currentPage' => 1,
             'queryString' => null,
@@ -82,12 +83,12 @@
         protected function renderLink($class, $page, $text) {
             $pattern = $this['linkPattern'];
             $href = '?' . $this['queryString'] . '&page=' .  $page;
-            return str_replace($this->search, array($class, $href, $text), $pattern);
+            return str_replace($this->linkPlaceholders, array($class, $href, $text), $pattern);
         }
         
         protected function renderDisabledLink($class, $text) {
             $pattern = $this['disabledPattern'];
-            return str_replace(array('{CLASS}', '{TEXT}'), array($class, $text), $pattern);
+            return str_replace($this->disabledPlaceholders, array($class, $text), $pattern);
         }
 		
 		//Public Methods
