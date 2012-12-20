@@ -16,14 +16,14 @@
 		}
         
         public function rows() {
-			if (!is_null($this['connection']) && !is_resource($this['connection'])) {
+			if (!is_null($this['sqlConnection']) && !is_resource($this['sqlConnection'])) {
 				if ($this['debug']) {
                     throw new RuntimeException('Check if the provided sql connection is a valid resource!');
 				}	
 				return false;
 			}
             
-            $resultTotal = mssql_query($this['sqlStatement'], $this['connection']);
+            $resultTotal = mssql_query($this['sqlStatement'], $this['sqlConnection']);
             $this->rowCount = mssql_num_rows($resultTotal);
 			if ($this->rowCount == 0) {
 				if ($this['debug']) {
@@ -45,7 +45,7 @@
 				$paginationQuery = $this['sqlStatement'] . ' WHERE RowNumber BETWEEN ' . $limitBegin . ' AND ' . $maxRowNumber;
 			}
             
-			return mssql_query($paginationQuery, $this['connection']);
+			return mssql_query($paginationQuery, $this['sqlConnection']);
 		}
     }
 ?>
