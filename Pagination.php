@@ -1,7 +1,6 @@
 <?php
 	abstract class Pagination implements ArrayAccess 
 	{	
-        protected $connection = null;
         protected $totalPages = 0;
         protected $rowCount = 0;
         protected $currentTotal = 0;
@@ -15,6 +14,7 @@
 			'adjacents' => 2,
             'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
             'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
+            	'sqlConnection' => null,
 			'sqlStatement' => null,
             'orderBy' => '',
             'stringDefaults' => array(
