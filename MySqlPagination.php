@@ -37,10 +37,8 @@
 			} else {
                 $page = (int)$this['page'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
-                
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
 				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
-				
                 $paginationQuery = $this['sqlStatement'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
 			}
             

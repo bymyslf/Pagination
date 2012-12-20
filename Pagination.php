@@ -1,32 +1,32 @@
 <?php
-	abstract class Pagination implements ArrayAccess 
+    abstract class Pagination implements ArrayAccess 
 	{	
-	        protected $totalPages = 0;
-	        protected $rowCount = 0;
-	        protected $currentTotal = 0;
-	        protected $disabledPlaceholders = array('{CLASS}', '{TEXT}');
-	        protected $linkPlaceholders = array ('{CLASS}', '{HREF}', '{TEXT}');
+        protected $totalPages = 0;
+        protected $rowCount = 0;
+        protected $currentTotal = 0;
+        protected $disabledPlaceholders = array('{CLASS}', '{TEXT}');
+        protected $linkPlaceholders = array('{CLASS}', '{HREF}', '{TEXT}');
 		protected $config = array (
 			'currentPage' => 1,
-            		'queryString' => null,
+            'queryString' => null,
 			'itemsPerPage' => 5,
 			'debug' => false,
 			'adjacents' => 2,
-		        'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
-		        'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
-		        'sqlConnection' => null,
+		    'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
+		    'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
+		    'sqlConnection' => null,
 			'sqlStatement' => null,
-            		'orderBy' => '',
-            		'stringDefaults' => array(
-                	'previous' => 'previous',
-                	'next' => 'next',
-                	'first' => 'first',
-                	'last' => 'last',
-                	'all' => array (
-                    		'default' => 'view all',
-                    		'whenSelected' => 'page view'  
-                	) 
-            		) 
+            'orderBy' => '',
+            'stringDefaults' => array(
+                'previous' => 'previous',
+                'next' => 'next',
+                'first' => 'first',
+                'last' => 'last',
+                'all' => array(
+                    'default' => 'view all',
+                    'whenSelected' => 'page view'  
+                ) 
+            ) 
 		);
 		
 		public function __get($name) {
@@ -135,7 +135,6 @@
 			if ($this->totalPages == 1 || (int)$this['currentPage'] == 1) {
                 return $this->renderDisabledLink('first disabled', $text);
 			} 
-            
             return $this->renderLink('first', 1, $text);
 		}
         
@@ -144,7 +143,6 @@
             if ($this->totalPages == 1 || $page == 1) {
                 return $this->renderDisabledLink('previous disabled', $text);
 			}
-            
             return $this->renderLink('previous', ($page - 1), $text);
         }
 		
@@ -152,7 +150,6 @@
             if ($this->totalPages == 1 || $this['currentPage'] == $this->totalPages) {
                 return $this->renderDisabledLink('next disabled', $text);
 			}
-            
             return $this->renderLink('next', ((int)$this['currentPage'] + 1), $text);
         }
         
@@ -160,7 +157,6 @@
             if ($this->totalPages == 1 || (int)$this['currentPage'] == $this->totalPages) {
                 return $this->renderDisabledLink('last disabled', $text);
 			} 
-            
 			return $this->renderLink('last', $this->totalPages, $text);
         }
 		
@@ -172,7 +168,6 @@
 				$viewAllPage = 1;
 				$viewAllStr = $text['whenSelected'];
 			}
-            
 			return $this->renderLink('all', $viewAllPage, $viewAllStr);
 		}
 	}

@@ -37,10 +37,8 @@
 			} else {
                 $page = (int)$this['page'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
-                
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
 				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
-
 				$maxRowNumber = ($itemsPerPage * $page);
 				$paginationQuery = $this['sqlStatement'] . ' WHERE RowNumber BETWEEN ' . $limitBegin . ' AND ' . $maxRowNumber;
 			}
