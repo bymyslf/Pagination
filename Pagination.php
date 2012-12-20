@@ -1,5 +1,5 @@
 <?php
-	abstract class Pagination implements ArrayAccess 
+		abstract class Pagination implements ArrayAccess 
 	{	
         protected $totalPages = 0;
         protected $rowCount = 0;
@@ -14,7 +14,7 @@
 			'adjacents' => 2,
             'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
             'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
-            	'sqlConnection' => null,
+            'sqlConnection' => null,
 			'sqlStatement' => null,
             'orderBy' => '',
             'stringDefaults' => array(
@@ -73,11 +73,11 @@
         // END ARRAYACCESS METHODS
           
 		protected function previousPage() {
-			return ($this->totalPages == 1 || $this['page'] == 1) ? 1 : (int)$this['page'] - 1;
+			return ($this->totalPages == 1 || $this['currentPage'] == 1) ? 1 : (int)$this['currentPage'] - 1;
 		}
 		
 		protected function nextPage() {
-			return ($this->totalPages == 1 || $this['page'] == $this->totalPages) ?  $this['page'] : (int)($this['page'] + 1);
+			return ($this->totalPages == 1 || $this['currentPage'] == $this->totalPages) ?  $this['currentPage'] : (int)($this['currentPage'] + 1);
 		}
         
         protected function renderLink($class, $page, $text) {
@@ -95,13 +95,13 @@
         public abstract function rows();
 		
 		public function renderPagination() {
-			if ($this['page'] === 'all') {
+			if ($this['currentPage'] === 'all') {
 				return $this->renderViewAllLink();
 			} 
             
 			$start = 0;
 			$end = 0;
-            $page = (int)$this['page'];
+            $page = (int)$this['currentPage'];
             $adjacents = (int)$this['adjacents'];
 			if (($page == 1) || ($page <= $adjacents)) {
                 $start = 1;
@@ -132,7 +132,7 @@
 		}
 	    
         public function renderFirstLink($text = '') {
-			if ($this->totalPages == 1 || (int)$this['page'] == 1) {
+			if ($this->totalPages == 1 || (int)$this['currentPage'] == 1) {
                 return $this->renderDisabledLink('first disabled', $text);
 			} 
             
@@ -140,7 +140,7 @@
 		}
         
         public function renderPreviousLink($text = '') {
-            $page = (int)$this['page'];
+            $page = (int)$this['currentPage'];
             if ($this->totalPages == 1 || $page == 1) {
                 return $this->renderDisabledLink('previous disabled', $text);
 			}
@@ -149,15 +149,15 @@
         }
 		
 		public function renderNextLink($text = '') {
-            if ($this->totalPages == 1 || $this['page'] == $this->totalPages) {
+            if ($this->totalPages == 1 || $this['currentPage'] == $this->totalPages) {
                 return $this->renderDisabledLink('next disabled', $text);
 			}
             
-            return $this->renderLink('next', ((int)$this['page'] + 1), $text);
+            return $this->renderLink('next', ((int)$this['currentPage'] + 1), $text);
         }
         
         public function renderLastLink($text = '') {
-            if ($this->totalPages == 1 || (int)$this['page'] == $this->totalPages) {
+            if ($this->totalPages == 1 || (int)$this['currentPage'] == $this->totalPages) {
                 return $this->renderDisabledLink('last disabled', $text);
 			} 
             
@@ -168,7 +168,7 @@
             $text = array_merge($this['all'], $text);
 			$viewAllPage = 'all';
 			$viewAllString = $text['default'];
-			if ($this['page'] === 'all') {
+			if ($this['currentPage'] === 'all') {
 				$viewAllPage = 1;
 				$viewAllStr = $text['whenSelected'];
 			}
