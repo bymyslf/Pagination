@@ -23,7 +23,12 @@
 				return false;
 			}
             
-            $resultTotal = mssql_query($this['sqlStatement'], $this['sqlConnection']);
+            if (is_null($this['sqlConnection'])) {
+                $resultTotal = mysql_query($this['sqlStatement']);
+            } else {
+                $resultTotal = mysql_query($this['sqlStatement'], $this['sqlConnection']);
+            }
+            
             $this->rowCount = mssql_num_rows($resultTotal);
 			if ($this->rowCount == 0) {
 				if ($this['debug']) {
@@ -32,18 +37,25 @@
 				return false;
 			}
             
-            if ($this['page'] === 'all') {
+            if ($this['currentPage'] === 'all') {
 				$paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'];
+                
 			} else {
-                $page = (int)$this['page'];
+                $page = (int)$this['currentPage'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
-				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
-				$maxRowNumber = ($itemsPerPage * $page);
-				$paginationQuery = $this['sqlStatement'] . ' WHERE RowNumber BETWEEN ' . $limitBegin . ' AND ' . $maxRowNumber;
+				$limitBegin = (($page - 1) * $itemsPerPage);
+				$this->currentTotal = ($page * $itemsPerPage);
+				$paginationQuery = $this['sqlStatement'] . ' WHERE RowNumber BETWEEN ' . $limitBegin . ' AND ' . $this->currentTotal;
 			}
             
-			return mssql_query($paginationQuery, $this['sqlConnection']);
+            if (is_null($this['sqlConnection'])) {
+                $rows = mysql_query($paginationQuery);
+            } else {
+                $rows = mysql_query($paginationQuery, $this['sqlConnection']);
+            }
+            
+			return $rows;
 		}
     }
 ?>
