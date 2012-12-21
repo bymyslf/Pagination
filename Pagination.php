@@ -42,7 +42,7 @@
                 case $name == 'totalPages' :
                     return $this->totalPages;
                 case $name == 'totalItems' :
-                    return ($this['currentPage'] == 'all') ? $this->currentTotal : $this->totalPages * (int)$this['itemsPerPage'];
+                    return $this->rowCount;
             }
 		}
 		
