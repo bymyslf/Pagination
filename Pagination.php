@@ -33,14 +33,16 @@
             switch (true) {
                 case array_key_exists($name, $this) :
                     return $this[$name];
-                case $name == 'subtotal' :
-                    return ($this->limitBegin + $this->currentTotal);
+                case $name == 'currentTotal' :
+                    return $this->currentTotal;
                 case $name == 'previousPage' :
                     return $this->previousPage();
                 case $name == 'nextPage' :
                     return $this->nextPage();
                 case $name == 'totalPages' :
                     return $this->totalPages;
+                case $name == 'totalItems' :
+                    return ($this['currentPage'] == 'all') ? $this->currentTotal : $this->totalPages * (int)$this['itemsPerPage'];
             }
 		}
 		
@@ -122,7 +124,7 @@
                     ++$start;
                 }
             }
-            
+
             $pages = '';
             for ($i = $start; $i <= $end; ++$i) {
                 $pages .= $this->renderLink(($i == $page) ? 'selected' : '', $i, $i);
