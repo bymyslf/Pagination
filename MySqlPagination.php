@@ -4,7 +4,7 @@
   	class MySqlPagination extends Pagination 
     {
         public function __construct(array $options) {
-  			$this = array_merge($this, $options);
+  			$this->config = array_merge($this->config, $options);
 			
 			if (empty($this['baseLink'])) {
 				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
@@ -22,8 +22,13 @@
 				}	
 				return false;
 			}
-            
-            $resultTotal = mysql_query($this['sqlStatement'], $this['sqlConnection']);
+ 
+            if (is_null($this['sqlConnection'])) {
+                $resultTotal = mysql_query($this['sqlStatement']);
+            } else {
+                $resultTotal = mysql_query($this['sqlStatement'], $this['sqlConnection']);
+            }
+     
             $this->rowCount = mysql_num_rows($resultTotal);
 			if ($this->rowCount == 0) {
 				if ($this['debug']) {
@@ -32,17 +37,25 @@
 				return false;
 			}
             
-            if ($this['page'] === 'all') {
+            if ($this['currentPage'] === 'all') {
 				$paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'];
+                $this->totalPages = 1;
 			} else {
-                $page = (int)$this['page'];
+                $page = (int)$this['currentPage'];
                 $itemsPerPage = (int)$this['itemsPerPage'];
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
-				$limitBegin = (($page - 1) * $itemsPerPage) + 1;
-                $paginationQuery = $this['sqlStatement'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
+				$limitBegin = (($page - 1) * $itemsPerPage);
+                $this->currentTotal = ($page * $itemsPerPage);
+                $paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
 			}
-            
-			return mysql_query($paginationQuery, $this['sqlConnection']);
+    
+            if (is_null($this['sqlConnection'])) {
+                $rows = mysql_query($paginationQuery);
+            } else {
+                $rows = mysql_query($paginationQuery, $this['sqlConnection']);
+            }
+   
+			return $rows;
 		}
     }
 ?>
