@@ -45,7 +45,6 @@
                 $itemsPerPage = (int)$this['itemsPerPage'];
 				$this->totalPages = ceil($this->rowCount / $itemsPerPage);
 				$limitBegin = (($page - 1) * $itemsPerPage);
-                $this->currentTotal = ($page * $itemsPerPage);
                 $paginationQuery = $this['sqlStatement'] . ' ' . $this['orderBy'] . ' LIMIT ' . $limitBegin . ', ' . $itemsPerPage;
 			}
     
@@ -55,6 +54,7 @@
                 $rows = mysql_query($paginationQuery, $this['sqlConnection']);
             }
    
+   		$this->currentTotal = mysql_num_rows($rows) + $limitBegin;
 			return $rows;
 		}
     }
