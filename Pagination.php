@@ -29,6 +29,14 @@
             ) 
 		);
 		
+		public function __construct(array $options) {
+  			$this->config = array_merge($this->config, $options);
+
+			if (empty($this['baseLink'])) {
+				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
+			}
+		}
+		
 		public function __get($name) {
             switch (true) {
                 case array_key_exists($name, $this) :
