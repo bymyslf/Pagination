@@ -4,11 +4,7 @@
   	class MySqlPagination extends Pagination 
     {
         public function __construct(array $options) {
-  			$this->config = array_merge($this->config, $options);
-			
-			if (empty($this['baseLink'])) {
-				$this['baseLink'] = basename(htmlspecialchars($_SERVER['PHP_SELF']));
-			}
+  			parent::__construct($options);
 		}
 		
 		public static function factory(array $options) {
