@@ -20,12 +20,12 @@
 			}
  
             if (is_null($this['sqlConnection'])) {
-                $resultTotal = mysql_query($this['sqlStatement']);
+                $resultTotal = mysql_query($this['sqlCountStatement']);
             } else {
-                $resultTotal = mysql_query($this['sqlStatement'], $this['sqlConnection']);
+                $resultTotal = mysql_query($this['sqlCountStatement'], $this['sqlConnection']);
             }
-     
-            $this->rowCount = mysql_num_rows($resultTotal);
+            $row = mysql_fetch_array($resultTotal);
+            $this->rowCount = $row[0];
 			if ($this->rowCount == 0) {
 				if ($this['debug']) {
                     throw new RuntimeException('Query returned zero rows.');
