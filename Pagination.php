@@ -8,16 +8,17 @@
         protected $linkPlaceholders = array('{CLASS}', '{HREF}', '{TEXT}');
 		protected $config = array (
 			'currentPage' => 1,
-            'queryString' => null,
+            		'queryString' => null,
 			'itemsPerPage' => 5,
 			'debug' => false,
 			'adjacents' => 2,
-		    'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
-		    'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
-		    'sqlConnection' => null,
+		    	'linkPattern' => '<li><a class="{CLASS}" href="{HREF}">{TEXT}</a></li>',
+		    	'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
+		    	'sqlConnection' => null,
 			'sqlStatement' => null,
-            'orderBy' => '',
-            'stringDefaults' => array(
+			'sqlCountStatement' => null,
+            		'orderBy' => '',
+            		'stringDefaults' => array(
                 'previous' => 'previous',
                 'next' => 'next',
                 'first' => 'first',
