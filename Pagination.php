@@ -16,7 +16,6 @@
 		    	'disablePattern' => '<li><span class="{CLASS}">{TEXT}</span></li>',
 		    	'sqlConnection' => null,
 			'sqlStatement' => null,
-			'sqlCountStatement' => null,
             		'orderBy' => '',
             		'stringDefaults' => array(
                 'previous' => 'previous',
