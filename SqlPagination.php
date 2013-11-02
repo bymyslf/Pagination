@@ -19,11 +19,14 @@
 				return false;
 			}
             
+            $pos = stripos($this['sqlStatement'], "FROM");
+            $count = "SELECT COUNT(*) " . substr($this['sqlStatement'], $pos);
             if (is_null($this['sqlConnection'])) {
-                $resultTotal = mssql_query($this['sqlCountStatement']);
+                $resultTotal = mssql_query($count);
             } else {
-                $resultTotal = mssql_query($this['sqlCountStatement'], $this['sqlConnection']);
+                $resultTotal = mssql_query($count, $this['sqlConnection']);
             }
+            
             $row = mssql_fetch_array($resultTotal);
             $this->rowCount = $row[0];
 			if ($this->rowCount == 0) {
